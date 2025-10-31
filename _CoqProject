@@ -1,0 +1,36 @@
+-R theories STCompiler
+
+# Common definitions
+theories/Common/Types.v
+theories/Common/Values.v
+theories/Common/Environment.v
+
+# Syntax definitions
+theories/Syntax/AST.v
+theories/Syntax/Bytecode.v
+
+# Semantics
+theories/Semantics/Operations.v
+theories/Semantics/VM.v
+theories/Semantics/SourceSemantics.v
+theories/Semantics/VMSemantics.v
+
+# Compiler
+theories/Compiler/CompilerState.v
+theories/Compiler/CodeGen.v
+theories/Compiler/Compiler.v
+
+# Verification
+theories/Verification/TypeSafety.v
+theories/Verification/Progress.v
+theories/Verification/Correctness.v
+
+# Extraction
+theories/Extraction/Extract.v
+
+# Examples
+examples/SimpleAssign.v
+examples/IfElse.v
+examples/WhileLoop.v
+examples/FunctionCall.v
+examples/Factorial.v
