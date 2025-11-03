@@ -1,6 +1,6 @@
 (** * VM: Virtual Machine State and Operations
 
-    This module defines the state of the virtual machine that executes
+    本模块定义 the state of the virtual machine that executes
     bytecode generated from IEC 61131-3 ST programs.
 *)
 
@@ -242,7 +242,7 @@ Proof.
   simpl. reflexivity.
 Qed.
 
-(** ** Examples *)
+(** ** 示例 *)
 
 Example ex_init_vm : vm_state :=
   init_vm_state [ILoadInt 5%Z; IHalt] [].

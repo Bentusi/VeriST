@@ -1,6 +1,6 @@
-(** * Simple Assignment Example
+(** * 简单赋值示例
 
-    This example demonstrates a simple assignment statement:
+    本示例演示一个简单的赋值语句:
     x := 10
 *)
 
@@ -18,23 +18,23 @@ Import ListNotations.
 Open Scope Z_scope.
 Open Scope string_scope.
 
-(** ** Source Program *)
+(** ** 源程序 *)
 
 (** AST: x := 10 *)
 Definition simple_assign_ast : stmt :=
   SAssign "x" (EConst (VInt 10%Z)).
 
-(** ** Expected Bytecode *)
+(** ** 预期的字节码 *)
 
-(** Manually compiled bytecode *)
+(** 手动编译的字节码 *)
 Definition simple_assign_code : code :=
   [ILoadInt 10;
    IStoreVar "x";
    IHalt].
 
-(** ** Verification *)
+(** ** 验证 *)
 
-(** Verify bytecode structure *)
+(** 验证字节码结构 *)
 Example bytecode_length : 
   code_length simple_assign_code = 3%nat.
 Proof. reflexivity. Qed.
@@ -51,12 +51,12 @@ Example bytecode_third_instr :
   get_instr simple_assign_code 2%nat = Some IHalt.
 Proof. reflexivity. Qed.
 
-(** ** Initial VM State *)
+(** ** 初始虚拟机状态 *)
 
 Definition simple_assign_vm : vm_state :=
   init_vm_state simple_assign_code [].
 
-(** Verify initial state *)
+(** 验证初始状态 *)
 Example init_pc_zero :
   vm_pc simple_assign_vm = 0%nat.
 Proof. reflexivity. Qed.
@@ -73,9 +73,9 @@ Example init_current_instr :
   current_instr simple_assign_vm = Some ((ILoadInt 10)%Z).
 Proof. reflexivity. Qed.
 
-(** ** Step-by-Step Execution Trace (manual) *)
+(** ** 逐步执行跟踪（手动）*)
 
-(** Step 1: After loading 10 onto stack *)
+(** 步骤 1: 加载 10 到栈后 *)
 Definition simple_assign_vm_step1 : vm_state :=
   inc_pc (push_stack simple_assign_vm (VInt 10%Z)).
 
@@ -91,7 +91,7 @@ Example step1_current_instr :
   current_instr simple_assign_vm_step1%nat = Some (IStoreVar "x").
 Proof. reflexivity. Qed.
 
-(** Step 2: After storing to variable x *)
+(** 步骤 2: 存储到变量 x 后 *)
 Definition simple_assign_vm_step2_opt : option vm_state :=
   match pop_stack simple_assign_vm_step1 with
   | Some (v, vm') => Some (inc_pc (update_env_vm vm' "x" v))
@@ -102,7 +102,7 @@ Example step2_defined :
   simple_assign_vm_step2_opt <> None.
 Proof. discriminate. Qed.
 
-(** Extract the state *)
+(** 提取状态 *)
 Definition simple_assign_vm_step2 : vm_state :=
   match simple_assign_vm_step2_opt with
   | Some vm => vm
@@ -125,7 +125,7 @@ Example step2_current_instr :
   current_instr simple_assign_vm_step2%nat = Some IHalt.
 Proof. reflexivity. Qed.
 
-(** Step 3: After halt *)
+(** 步骤 3: 停机后 *)
 Definition simple_assign_vm_final : vm_state :=
   halt_vm simple_assign_vm_step2.
 
@@ -137,17 +137,17 @@ Example final_var_x_preserved :
   lookup (vm_env simple_assign_vm_final) "x" = Some (VInt 10%Z).
 Proof. reflexivity. Qed.
 
-(** ** Summary *)
+(** ** 总结 *)
 
-(** This example demonstrates that:
-    1. We can represent a simple ST assignment as an AST
-    2. We can manually compile it to bytecode
-    3. We can create a VM state to execute the bytecode
-    4. We can manually trace the execution step by step
-    5. The final state correctly reflects the assignment
+(** 本示例演示了:
+    1. 我们可以将简单的 ST 赋值表示为 AST
+    2. 我们可以手动将其编译为字节码
+    3. 我们可以创建虚拟机状态来执行字节码
+    4. 我们可以手动逐步跟踪执行过程
+    5. 最终状态正确反映了赋值
 
-    In later phases, we will:
-    - Automate the compilation from AST to bytecode
-    - Define formal execution semantics
-    - Prove that compilation preserves semantics
+    在后续阶段，我们将:
+    - 自动化从 AST 到字节码的编译
+    - 定义形式化的执行语义
+    - 证明编译保持语义
 *)

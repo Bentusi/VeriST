@@ -1,7 +1,7 @@
-(** * Compiler: Main Compiler Implementation
+(** * Compiler: 主编译器实现
 
-    This module implements the compiler from ST AST to bytecode.
-    (To be implemented in Phase 3)
+    本模块实现从 ST AST 到字节码的编译器。
+    （将在阶段3实现）
 *)
 
 Require Import STCompiler.Syntax.AST.
@@ -9,4 +9,4 @@ Require Import STCompiler.Syntax.Bytecode.
 Require Import STCompiler.Compiler.CompilerState.
 Require Import STCompiler.Compiler.CodeGen.
 
-(** Placeholder for Phase 3 implementation *)
+(** 阶段3实现的占位符 *)

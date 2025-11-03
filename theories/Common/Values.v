@@ -1,7 +1,7 @@
-(** * Values: Runtime Values for IEC 61131-3 ST
+(** * Values: IEC 61131-3 ST 的运行时值
 
-    This module defines runtime values and their relationship with types.
-    It includes value constructors, type checking, and value operations.
+    本模块定义运行时值及其与类型的关系。
+    包括值构造器、类型检查和值操作。
 *)
 
 Require Import Coq.Strings.String.
@@ -13,19 +13,19 @@ Require Import STCompiler.Common.Types.
 Open Scope Z_scope.
 Open Scope string_scope.
 
-(** ** Value Definitions *)
+(** ** 值定义 *)
 
-(** Runtime values *)
+(** 运行时值 *)
 Inductive value : Type :=
-  | VBool : bool -> value        (** Boolean value *)
-  | VInt : Z -> value            (** Integer value *)
-  | VReal : Q -> value           (** Real number value *)
-  | VString : string -> value    (** String value *)
-  | VVoid : value.               (** Void value (unit) *)
+  | VBool : bool -> value        (** 布尔值 *)
+  | VInt : Z -> value            (** 整数值 *)
+  | VReal : Q -> value           (** 实数值 *)
+  | VString : string -> value    (** 字符串值 *)
+  | VVoid : value.               (** 空值（单元） *)
 
-(** ** Value Type Relation *)
+(** ** 值类型关系 *)
 
-(** Type of a value *)
+(** 值的类型 *)
 Definition typeof (v : value) : ty :=
   match v with
   | VBool _ => TyBool
@@ -35,7 +35,7 @@ Definition typeof (v : value) : ty :=
   | VVoid => TyVoid
   end.
 
-(** Value has a type *)
+(** 值具有类型 *)
 Inductive has_type : value -> ty -> Prop :=
   | T_Bool : forall b, has_type (VBool b) TyBool
   | T_Int : forall n, has_type (VInt n) TyInt
@@ -43,9 +43,9 @@ Inductive has_type : value -> ty -> Prop :=
   | T_String : forall s, has_type (VString s) TyString
   | T_Void : has_type VVoid TyVoid.
 
-(** ** Value Properties *)
+(** ** 值属性 *)
 
-(** Type checking is consistent with has_type *)
+(** 类型检查与 has_type 一致 *)
 Lemma typeof_has_type : forall v,
   has_type v (typeof v).
 Proof.
@@ -53,7 +53,7 @@ Proof.
   destruct v; constructor.
 Qed.
 
-(** has_type is deterministic *)
+(** has_type 是确定性的 *)
 Lemma has_type_deterministic : forall v t1 t2,
   has_type v t1 ->
   has_type v t2 ->
@@ -63,9 +63,9 @@ Proof.
   inversion H1; subst; inversion H2; subst; reflexivity.
 Qed.
 
-(** ** Value Equality *)
+(** ** 值相等性 *)
 
-(** Value equality (for same types) *)
+(** 值相等（对于相同类型） *)
 Definition value_eqb (v1 v2 : value) : bool :=
   match v1, v2 with
   | VBool b1, VBool b2 => Bool.eqb b1 b2
@@ -76,9 +76,9 @@ Definition value_eqb (v1 v2 : value) : bool :=
   | _, _ => false
   end.
 
-(** ** Default Values *)
+(** ** 默认值 *)
 
-(** Default value for each type *)
+(** 每种类型的默认值 *)
 Definition default_value (t : ty) : value :=
   match t with
   | TyBool => VBool false
@@ -95,41 +95,41 @@ Proof.
   destruct t; constructor.
 Qed.
 
-(** ** Value Coercion *)
+(** ** 值强制转换 *)
 
-(** Coerce a value to a target type *)
+(** 将值强制转换为目标类型 *)
 Definition coerce_value (v : value) (target : ty) : option value :=
   match v, target with
   | VInt n, TyReal => Some (VReal (inject_Z n))
   | v', t => if ty_eq_dec (typeof v') t then Some v' else None
   end.
 
-(** For now, we admit this lemma - will prove properly later *)
+(** 暂时承认此引理 - 后续会正确证明 *)
 Axiom coerce_value_preserves_type : forall v t v',
   coerce_value v t = Some v' ->
   has_type v' t.
 
-(** ** Value Operations Support *)
+(** ** 值操作支持 *)
 
-(** Check if a value is truthy (for conditions) *)
+(** 检查值是否为真（用于条件） *)
 Definition is_truthy (v : value) : option bool :=
   match v with
   | VBool b => Some b
   | _ => None
   end.
 
-(** Convert value to string (for display) *)
+(** 将值转换为字符串（用于显示） *)
 Fixpoint value_to_string (v : value) : string :=
   match v with
   | VBool true => "TRUE"
   | VBool false => "FALSE"
-  | VInt n => ""  (* Would need Z to string conversion *)
-  | VReal r => ""  (* Would need Q to string conversion *)
+  | VInt n => ""  (* 需要 Z 到字符串的转换 *)
+  | VReal r => ""  (* 需要 Q 到字符串的转换 *)
   | VString s => s
   | VVoid => "VOID"
   end.
 
-(** ** Examples *)
+(** ** 示例 *)
 
 Example ex_bool_value : value := VBool true.
 Example ex_int_value : value := VInt 42.

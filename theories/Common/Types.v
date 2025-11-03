@@ -1,7 +1,7 @@
-(** * Types: IEC 61131-3 ST Type System
+(** * Types: IEC 61131-3 ST 类型系统
 
-    This module defines the type system for the IEC 61131-3 Structured Text language.
-    It includes basic data types, type operations, and type safety properties.
+    本模块定义了 IEC 61131-3 结构化文本语言的类型系统。
+    包括基本数据类型、类型操作和类型安全属性。
 *)
 
 Require Import Coq.Strings.String.
@@ -12,7 +12,7 @@ Require Import Coq.Bool.Bool.
 Open Scope Z_scope.
 Open Scope string_scope.
 
-(** ** Basic Data Types *)
+(** ** 基本数据类型 *)
 
 (** The [ty] type represents the data types supported by IEC 61131-3 ST *)
 Inductive ty : Type :=
@@ -28,7 +28,7 @@ Proof.
   decide equality.
 Qed.
 
-(** ** Type Operations *)
+(** ** 类型操作 *)
 
 (** String representation of types (for debugging/error messages) *)
 Definition ty_to_string (t : ty) : string :=
@@ -54,7 +54,7 @@ Definition is_comparable_type (t : ty) : bool :=
   | _ => false
   end.
 
-(** ** Type Compatibility *)
+(** ** 类型兼容性 *)
 
 (** Type coercion/promotion rules *)
 (** INT can be promoted to REAL *)
@@ -75,7 +75,7 @@ Definition common_type (t1 t2 : ty) : option ty :=
   | _, _ => None
   end.
 
-(** ** Type Properties *)
+(** ** 类型属性 *)
 
 (** Reflexivity of type coercion *)
 Lemma can_coerce_refl : forall t,
@@ -102,7 +102,7 @@ Proof.
   destruct t1, t2; simpl in *; inversion H; reflexivity.
 Qed.
 
-(** ** Examples *)
+(** ** 示例 *)
 
 Example ex_int_type : ty := TyInt.
 Example ex_bool_type : ty := TyBool.

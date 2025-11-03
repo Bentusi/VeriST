@@ -1,7 +1,6 @@
-(** * Environment: Variable Environments for IEC 61131-3 ST
+(** * Environment: IEC 61131-3 ST 的变量环境
 
-    This module defines variable environments used in both
-    source language semantics and virtual machine execution.
+    本模块定义用于源语言语义和虚拟机执行的变量环境。
 *)
 
 Require Import Coq.Strings.String.
@@ -15,25 +14,25 @@ Import ListNotations.
 Open Scope Z_scope.
 Open Scope string_scope.
 
-(** ** Environment Definition *)
+(** ** 环境定义 *)
 
-(** Environment maps variable names to values *)
+(** 环境将变量名映射到值 *)
 Definition env : Type := string -> option value.
 
-(** Empty environment *)
+(** 空环境 *)
 Definition empty : env := fun _ => None.
 
-(** Update environment with a new binding *)
+(** 用新绑定更新环境 *)
 Definition update (e : env) (x : string) (v : value) : env :=
   fun y => if String.eqb x y then Some v else e y.
 
-(** Lookup a variable in the environment *)
+(** 在环境中查找变量 *)
 Definition lookup (e : env) (x : string) : option value :=
   e x.
 
-(** ** Environment Properties *)
+(** ** 环境属性 *)
 
-(** Lookup in empty environment returns None *)
+(** 在空环境中查找返回 None *)
 Lemma lookup_empty : forall x,
   lookup empty x = None.
 Proof.
@@ -50,7 +49,7 @@ Proof.
   reflexivity.
 Qed.
 
-(** Update and lookup different variable *)
+(** 更新和查找不同变量 *)
 Lemma update_neq : forall e x1 x2 v,
   x1 <> x2 ->
   lookup (update e x1 v) x2 = lookup e x2.
@@ -62,7 +61,7 @@ Proof.
   - reflexivity.
 Qed.
 
-(** Update shadows previous binding *)
+(** 更新会覆盖先前的绑定 *)
 Lemma update_shadow : forall e x v1 v2,
   update (update e x v1) x v2 = update e x v2.
 Proof.
@@ -73,7 +72,7 @@ Proof.
   destruct (String.eqb x y); reflexivity.
 Qed.
 
-(** Updates of different variables commute *)
+(** 不同变量的更新可交换 *)
 Lemma update_permute : forall e x1 x2 v1 v2,
   x1 <> x2 ->
   update (update e x1 v1) x2 v2 = update (update e x2 v2) x1 v1.
@@ -87,27 +86,27 @@ Proof.
   subst; try reflexivity; try contradiction.
 Qed.
 
-(** ** Typed Environment *)
+(** ** 类型化环境 *)
 
-(** Type environment maps variable names to types *)
+(** 类型环境将变量名映射到类型 *)
 Definition type_env : Type := string -> option ty.
 
-(** Empty type environment *)
+(** 空类型环境 *)
 Definition empty_tenv : type_env := fun _ => None.
 
-(** Update type environment *)
+(** 更新类型环境 *)
 Definition update_tenv (te : type_env) (x : string) (t : ty) : type_env :=
   fun y => if String.eqb x y then Some t else te y.
 
-(** ** Well-Typed Environment *)
+(** ** 良类型环境 *)
 
-(** An environment is well-typed with respect to a type environment
-    if every variable has the expected type *)
+(** 如果每个变量都具有预期类型，
+    则环境相对于类型环境是良类型的 *)
 Definition well_typed_env (te : type_env) (e : env) : Prop :=
   forall x v, lookup e x = Some v ->
               exists t, te x = Some t /\ has_type v t.
 
-(** Empty environment is well-typed *)
+(** 空环境是良类型的 *)
 Lemma empty_well_typed : 
   well_typed_env empty_tenv empty.
 Proof.
@@ -115,35 +114,35 @@ Proof.
   intros x v H. discriminate.
 Qed.
 
-(** Update preserves well-typedness - we admit for now *)
+(** 更新保持良类型性 - 暂时承认 *)
 Axiom update_preserves_typing : forall te e x v t,
   well_typed_env te e ->
   has_type v t ->
   well_typed_env (update_tenv te x t) (update e x v).
 
-(** ** Bulk Updates *)
+(** ** 批量更新 *)
 
-(** Update environment with a list of bindings *)
+(** 用绑定列表更新环境 *)
 Fixpoint updates (e : env) (bindings : list (string * value)) : env :=
   match bindings with
   | [] => e
   | (x, v) :: rest => updates (update e x v) rest
   end.
 
-(** ** Environment Equivalence *)
+(** ** 环境等价性 *)
 
-(** Two environments are equivalent on a set of variables *)
+(** 两个环境在变量集合上等价 *)
 Definition env_equiv_on (vars : list string) (e1 e2 : env) : Prop :=
   forall x, In x vars -> lookup e1 x = lookup e2 x.
 
-(** Reflexivity of environment equivalence *)
+(** 环境等价性的自反性 *)
 Lemma env_equiv_refl : forall vars e,
   env_equiv_on vars e e.
 Proof.
   intros vars e x Hin. reflexivity.
 Qed.
 
-(** Symmetry of environment equivalence *)
+(** 环境等价性的对称性 *)
 Lemma env_equiv_sym : forall vars e1 e2,
   env_equiv_on vars e1 e2 ->
   env_equiv_on vars e2 e1.
@@ -152,7 +151,7 @@ Proof.
   symmetry. apply H. assumption.
 Qed.
 
-(** ** Examples *)
+(** ** 示例 *)
 
 Example ex_empty_lookup : lookup empty "x" = None.
 Proof. apply lookup_empty. Qed.

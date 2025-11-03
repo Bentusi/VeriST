@@ -1,10 +1,10 @@
-(** * Progress: Progress Property Proofs
+(** * Progress: 进展性证明
 
-    This module will contain progress property proofs.
-    (To be implemented in Phase 4)
+    本模块将包含进展性证明。
+    （将在阶段4实现）
 *)
 
 Require Import STCompiler.Semantics.SourceSemantics.
 Require Import STCompiler.Semantics.VMSemantics.
 
-(** Placeholder for Phase 4 implementation *)
+(** 阶段4实现的占位符 *)

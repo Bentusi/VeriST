@@ -1,10 +1,10 @@
-(** * CodeGen: Code Generation Utilities
+(** * CodeGen: 代码生成工具
 
-    This module provides utilities for generating bytecode.
-    (To be implemented in Phase 3)
+    本模块提供用于生成字节码的工具。
+    （将在阶段3实现）
 *)
 
 Require Import STCompiler.Syntax.Bytecode.
 Require Import STCompiler.Compiler.CompilerState.
 
-(** Placeholder for Phase 3 implementation *)
+(** 阶段3实现的占位符 *)

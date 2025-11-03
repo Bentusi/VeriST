@@ -1,10 +1,10 @@
-(** * TypeSafety: Type Safety Proofs
+(** * TypeSafety: 类型安全性证明
 
-    This module will contain type safety proofs.
-    (To be implemented in Phase 4)
+    本模块将包含类型安全性证明。
+    （将在阶段4实现）
 *)
 
 Require Import STCompiler.Common.Types.
 Require Import STCompiler.Syntax.AST.
 
-(** Placeholder for Phase 4 implementation *)
+(** 阶段4实现的占位符 *)

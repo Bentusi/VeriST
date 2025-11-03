@@ -1,6 +1,6 @@
 (** * CompilerState: Compiler State Management
 
-    This module defines the state monad and utilities for the compiler.
+    本模块定义 the state monad and utilities for the compiler.
     (To be implemented in Phase 3)
 *)
 

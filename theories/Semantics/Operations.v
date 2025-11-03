@@ -1,7 +1,7 @@
 (** * Operations: Semantic Operations for IEC 61131-3 ST
 
-    This module defines the semantic operations for evaluating
-    expressions and executing statements, including arithmetic,
+    本模块定义 the semantic operations for evaluating
+    expressions and executing statements, 包括 arithmetic,
     comparison, and logical operations.
 *)
 
@@ -87,7 +87,7 @@ Definition eval_add (v1 v2 : value) : option value :=
 Definition eval_sub (v1 v2 : value) : option value :=
   eval_arith_binop Z.sub Qminus v1 v2.
 
-(** Multiplication *)
+(** 乘法 *)
 Definition eval_mul (v1 v2 : value) : option value :=
   eval_arith_binop Z.mul Qmult v1 v2.
 
@@ -145,11 +145,11 @@ Definition eval_gt (v1 v2 : value) : option value :=
 Definition eval_ge (v1 v2 : value) : option value :=
   eval_comp_binop Z.geb (fun r1 r2 => negb (Qle_bool r2 r1)) v1 v2.
 
-(** Logical AND *)
+(** 逻辑与 AND *)
 Definition eval_and (v1 v2 : value) : option value :=
   eval_bool_binop andb v1 v2.
 
-(** Logical OR *)
+(** 逻辑或 OR *)
 Definition eval_or (v1 v2 : value) : option value :=
   eval_bool_binop orb v1 v2.
 
@@ -163,7 +163,7 @@ Definition eval_neg (v : value) : option value :=
   | _ => None
   end.
 
-(** Logical NOT *)
+(** 逻辑非 NOT *)
 Definition eval_not (v : value) : option value :=
   match v with
   | VBool b => Some (VBool (negb b))
@@ -188,7 +188,7 @@ Axiom eval_not_involutive : forall b,
 Axiom eval_div_zero_int : forall n,
   eval_div (VInt n) (VInt 0) = None.
 
-(** ** Examples *)
+(** ** 示例 *)
 
 Example ex_add_int : eval_add (VInt 5) (VInt 3) = Some (VInt 8).
 Proof. reflexivity. Qed.

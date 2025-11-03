@@ -1,7 +1,7 @@
-(** * While Loop Example
+(** * While 循环示例
 
-    Example demonstrating WHILE loop.
-    (To be implemented in later phases)
+    示例演示 WHILE 循环。
+    （将在后续阶段实现）
 *)
 
 Require Import STCompiler.Syntax.AST.

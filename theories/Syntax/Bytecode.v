@@ -1,7 +1,7 @@
-(** * Bytecode: Virtual Machine Instruction Set
+(** * Bytecode: 虚拟机指令集
 
-    This module defines the bytecode instruction set for the
-    IEC 61131-3 ST virtual machine, based on STVM design.
+    本模块定义 IEC 61131-3 ST 虚拟机的字节码指令集，
+    基于 STVM 设计。
 *)
 
 Require Import Coq.Strings.String.
@@ -15,113 +15,113 @@ Import ListNotations.
 Open Scope string_scope.
 Open Scope Z_scope.
 
-(** ** Instruction Set *)
+(** ** 指令集 *)
 
-(** Bytecode instructions *)
+(** 字节码指令 *)
 Inductive instr : Type :=
-  (* Data manipulation instructions *)
-  | ILoadInt : Z -> instr              (** Load integer constant *)
-  | ILoadReal : Q -> instr             (** Load real constant *)
-  | ILoadBool : bool -> instr          (** Load boolean constant *)
-  | ILoadString : string -> instr      (** Load string constant *)
-  | ILoadVar : string -> instr         (** Load variable value *)
-  | IStoreVar : string -> instr        (** Store value to variable *)
+  (* 数据操作指令 *)
+  | ILoadInt : Z -> instr              (** 加载整数常量 *)
+  | ILoadReal : Q -> instr             (** 加载实数常量 *)
+  | ILoadBool : bool -> instr          (** 加载布尔常量 *)
+  | ILoadString : string -> instr      (** 加载字符串常量 *)
+  | ILoadVar : string -> instr         (** 加载变量值 *)
+  | IStoreVar : string -> instr        (** 存储值到变量 *)
   
-  (* Arithmetic instructions *)
-  | IAdd : instr                       (** Addition: pop b, pop a, push a+b *)
-  | ISub : instr                       (** Subtraction: pop b, pop a, push a-b *)
-  | IMul : instr                       (** Multiplication: pop b, pop a, push a*b *)
-  | IDiv : instr                       (** Division: pop b, pop a, push a/b *)
-  | IMod : instr                       (** Modulo: pop b, pop a, push a mod b *)
-  | INeg : instr                       (** Negation: pop a, push -a *)
+  (* 算术指令 *)
+  | IAdd : instr                       (** 加法: 弹出 b, 弹出 a, 压入 a+b *)
+  | ISub : instr                       (** 减法: 弹出 b, 弹出 a, 压入 a-b *)
+  | IMul : instr                       (** 乘法: 弹出 b, 弹出 a, 压入 a*b *)
+  | IDiv : instr                       (** 除法: 弹出 b, 弹出 a, 压入 a/b *)
+  | IMod : instr                       (** 取模: 弹出 b, 弹出 a, 压入 a mod b *)
+  | INeg : instr                       (** 取负: 弹出 a, 压入 -a *)
   
-  (* Comparison instructions *)
-  | IEq : instr                        (** Equal: pop b, pop a, push a=b *)
-  | INe : instr                        (** Not equal: pop b, pop a, push a≠b *)
-  | ILt : instr                        (** Less than: pop b, pop a, push a<b *)
-  | ILe : instr                        (** Less or equal: pop b, pop a, push a≤b *)
-  | IGt : instr                        (** Greater than: pop b, pop a, push a>b *)
-  | IGe : instr                        (** Greater or equal: pop b, pop a, push a≥b *)
+  (* 比较指令 *)
+  | IEq : instr                        (** 等于: 弹出 b, 弹出 a, 压入 a=b *)
+  | INe : instr                        (** 不等于: 弹出 b, 弹出 a, 压入 a≠b *)
+  | ILt : instr                        (** 小于: 弹出 b, 弹出 a, 压入 a<b *)
+  | ILe : instr                        (** 小于等于: 弹出 b, 弹出 a, 压入 a≤b *)
+  | IGt : instr                        (** 大于: 弹出 b, 弹出 a, 压入 a>b *)
+  | IGe : instr                        (** 大于等于: 弹出 b, 弹出 a, 压入 a≥b *)
   
-  (* Logical instructions *)
-  | IAnd : instr                       (** Logical AND: pop b, pop a, push a∧b *)
-  | IOr : instr                        (** Logical OR: pop b, pop a, push a∨b *)
-  | INot : instr                       (** Logical NOT: pop a, push ¬a *)
+  (* 逻辑指令 *)
+  | IAnd : instr                       (** 逻辑与: 弹出 b, 弹出 a, 压入 a∧b *)
+  | IOr : instr                        (** 逻辑或: 弹出 b, 弹出 a, 压入 a∨b *)
+  | INot : instr                       (** 逻辑非: 弹出 a, 压入 ¬a *)
   
-  (* Control flow instructions *)
-  | IJmp : nat -> instr                (** Unconditional jump to address *)
-  | IJz : nat -> instr                 (** Jump if zero (false) *)
-  | IJnz : nat -> instr                (** Jump if not zero (true) *)
+  (* 控制流指令 *)
+  | IJmp : nat -> instr                (** 无条件跳转到地址 *)
+  | IJz : nat -> instr                 (** 如果为零（假）则跳转 *)
+  | IJnz : nat -> instr                (** 如果非零（真）则跳转 *)
   
-  (* Function call instructions *)
-  | ICall : nat -> instr               (** Call function at address *)
-  | IRet : instr                       (** Return from function *)
-  | ILoadParam : nat -> instr          (** Load parameter by index *)
-  | IStoreParam : nat -> instr         (** Store to parameter by index *)
+  (* 函数调用指令 *)
+  | ICall : nat -> instr               (** 调用地址处的函数 *)
+  | IRet : instr                       (** 从函数返回 *)
+  | ILoadParam : nat -> instr          (** 按索引加载参数 *)
+  | IStoreParam : nat -> instr         (** 按索引存储到参数 *)
   
-  (* Stack manipulation instructions *)
-  | IPop : instr                       (** Pop and discard top of stack *)
-  | IDup : instr                       (** Duplicate top of stack *)
+  (* 栈操作指令 *)
+  | IPop : instr                       (** 弹出并丢弃栈顶 *)
+  | IDup : instr                       (** 复制栈顶 *)
   
-  (* System instructions *)
-  | IHalt : instr                      (** Halt execution *)
-  | INop : instr.                      (** No operation *)
+  (* 系统指令 *)
+  | IHalt : instr                      (** 停止执行 *)
+  | INop : instr.                      (** 空操作 *)
 
-(** ** Code Representation *)
+(** ** 代码表示 *)
 
-(** Bytecode program is a list of instructions *)
+(** 字节码程序是指令列表 *)
 Definition code := list instr.
 
-(** Address in code *)
+(** 代码中的地址 *)
 Definition address := nat.
 
-(** Label for jump targets (used during compilation) *)
+(** 跳转目标标签（编译时使用） *)
 Definition label := nat.
 
-(** ** Instruction Properties *)
+(** ** 指令属性 *)
 
-(** Check if an instruction is a jump *)
+(** 检查指令是否为跳转 *)
 Definition is_jump (i : instr) : bool :=
   match i with
   | IJmp _ | IJz _ | IJnz _ => true
   | _ => false
   end.
 
-(** Check if an instruction is a call *)
+(** 检查指令是否为调用 *)
 Definition is_call (i : instr) : bool :=
   match i with
   | ICall _ => true
   | _ => false
   end.
 
-(** Check if an instruction is a return *)
+(** 检查指令是否为返回 *)
 Definition is_return (i : instr) : bool :=
   match i with
   | IRet => true
   | _ => false
   end.
 
-(** Check if an instruction modifies control flow *)
+(** 检查指令是否修改控制流 *)
 Definition is_control_flow (i : instr) : bool :=
   is_jump i || is_call i || is_return i.
 
-(** ** Code Access *)
+(** ** 代码访问 *)
 
-(** Get instruction at address *)
+(** 获取地址处的指令 *)
 Definition get_instr (c : code) (addr : address) : option instr :=
   nth_error c addr.
 
-(** Code length *)
+(** 代码长度 *)
 Definition code_length (c : code) : nat :=
   length c.
 
-(** Check if address is valid *)
+(** 检查地址是否有效 *)
 Definition valid_address (c : code) (addr : address) : bool :=
   Nat.ltb addr (code_length c).
 
-(** ** Instruction String Representation *)
+(** ** 指令字符串表示 *)
 
-(** Convert instruction to string (for debugging) *)
+(** 将指令转换为字符串（用于调试） *)
 Definition instr_to_string (i : instr) : string :=
   match i with
   | ILoadInt n => "LOAD_INT " (* ++ Z.to_string n *)
@@ -158,49 +158,49 @@ Definition instr_to_string (i : instr) : string :=
   | INop => "NOP"
   end.
 
-(** ** Examples *)
+(** ** 示例 *)
 
-(** Example: Load and add two integers *)
+(** 示例：加载并相加两个整数 *)
 Example ex_add_code : code :=
   [ILoadInt 5;
    ILoadInt 3;
    IAdd;
    IHalt].
 
-(** Example: Simple variable assignment *)
+(** 示例：简单变量赋值 *)
 Example ex_assign_code : code :=
   [ILoadInt 10;
    IStoreVar "x";
    IHalt].
 
-(** Example: Conditional jump *)
+(** 示例：条件跳转 *)
 Example ex_conditional : code :=
   [ILoadVar "x";
    ILoadInt 0;
    IGt;
-   IJz 6;        (* Jump to address 6 if false *)
+   IJz 6;        (* 如果为假则跳转到地址 6 *)
    ILoadInt 1;
    IStoreVar "y";
-   IJmp 8;       (* Jump to address 8 *)
+   IJmp 8;       (* 跳转到地址 8 *)
    ILoadInt 0;
    IStoreVar "y";
    IHalt].
 
-(** Example: Function call *)
+(** 示例：函数调用 *)
 Example ex_function_call : code :=
-  [ILoadInt 5;        (* Argument 1 *)
-   ILoadInt 3;        (* Argument 2 *)
-   ICall 10;          (* Call function at address 10 *)
+  [ILoadInt 5;        (* 参数 1 *)
+   ILoadInt 3;        (* 参数 2 *)
+   ICall 10;          (* 调用地址 10 处的函数 *)
    IStoreVar "result";
    IHalt;
-   (* Function starts at address 10 *)
+   (* 函数从地址 10 开始 *)
    INop; INop; INop; INop; INop;
    ILoadParam 0;
    ILoadParam 1;
    IAdd;
    IRet].
 
-(** Properties of example code *)
+(** 示例代码的属性 *)
 
 Example ex_add_code_length : code_length ex_add_code = 4%nat.
 Proof. reflexivity. Qed.

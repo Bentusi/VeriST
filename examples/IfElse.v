@@ -1,7 +1,7 @@
-(** * If-Else Example
+(** * If-Else 示例
 
-    Example demonstrating IF-THEN-ELSE statement.
-    (To be implemented in later phases)
+    示例演示 IF-THEN-ELSE 语句。
+    （将在后续阶段实现）
 *)
 
 Require Import STCompiler.Syntax.AST.

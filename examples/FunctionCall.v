@@ -1,7 +1,7 @@
-(** * Function Call Example
+(** * 函数调用示例
 
-    Example demonstrating function calls.
-    (To be implemented in later phases)
+    示例演示函数调用。
+    （将在后续阶段实现）
 *)
 
 Require Import STCompiler.Syntax.AST.
