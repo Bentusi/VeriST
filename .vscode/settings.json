@@ -1,0 +1,9 @@
+{
+  "coqtop.binPath": "/usr/bin",
+  "coqtop.args": [
+    "-R",
+    "theories",
+    "STCompiler"
+  ],
+  "vscoq.path": "_CoqProject"
+}

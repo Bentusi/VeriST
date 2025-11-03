@@ -119,7 +119,7 @@ Definition is_truthy (v : value) : option bool :=
   end.
 
 (** 将值转换为字符串（用于显示） *)
-Fixpoint value_to_string (v : value) : string :=
+Definition value_to_string (v : value) : string :=
   match v with
   | VBool true => "TRUE"
   | VBool false => "FALSE"
@@ -150,7 +150,7 @@ Proof. constructor. Qed.
 Example ex_default_bool : default_value TyBool = VBool false.
 Proof. reflexivity. Qed.
 
-Example ex_coerce_int_real : 
+Example ex_coerce_int_real :
   coerce_value (VInt 5) TyReal = Some (VReal (inject_Z 5)).
 Proof. reflexivity. Qed.
 
