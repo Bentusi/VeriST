@@ -28,7 +28,27 @@ Proof.
   decide equality.
 Qed.
 
-(** ** 类型操作 *)
+(** Boolean type equality *)
+Definition ty_eqb (t1 t2 : ty) : bool :=
+  match t1, t2 with
+  | TyBool, TyBool => true
+  | TyInt, TyInt => true
+  | TyReal, TyReal => true
+  | TyString, TyString => true
+  | TyVoid, TyVoid => true
+  | _, _ => false
+  end.
+
+Lemma ty_eqb_eq : forall t1 t2,
+  ty_eqb t1 t2 = true <-> t1 = t2.
+Proof.
+  intros t1 t2.
+  split; intros H.
+  - destruct t1, t2; simpl in *; try discriminate; reflexivity.
+  - subst. destruct t2; reflexivity.
+Qed.
+
+(** ** 类型操作 **)
 
 (** String representation of types (for debugging/error messages) *)
 Definition ty_to_string (t : ty) : string :=
