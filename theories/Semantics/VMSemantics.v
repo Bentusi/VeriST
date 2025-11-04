@@ -447,3 +447,405 @@ Proof.
   reflexivity. reflexivity.
   apply Multi_refl.
 Qed.
+
+(* ================================================================= *)
+(** ** 虚拟机执行函数（用于提取） *)
+
+(** 可执行的虚拟机单步函数
+    返回 Some st' 表示成功执行到新状态
+    返回 None 表示无法执行（错误或已停机） *)
+Definition vm_step_exec (st : vm_state) : option vm_state :=
+  if st.(vm_halted) then None
+  else
+    match nth_error st.(vm_code) st.(vm_pc) with
+    | None => None  (* PC超出代码范围 *)
+    | Some instr =>
+        match instr with
+        | ILoadInt n => 
+            Some {| vm_code := st.(vm_code);
+                    vm_pc := S st.(vm_pc);
+                    vm_stack := VInt n :: st.(vm_stack);
+                    vm_env := st.(vm_env);
+                    vm_frames := st.(vm_frames);
+                    vm_functions := st.(vm_functions);
+                    vm_halted := false |}
+        | ILoadReal r =>
+            Some {| vm_code := st.(vm_code);
+                    vm_pc := S st.(vm_pc);
+                    vm_stack := VReal r :: st.(vm_stack);
+                    vm_env := st.(vm_env);
+                    vm_frames := st.(vm_frames);
+                    vm_functions := st.(vm_functions);
+                    vm_halted := false |}
+        | ILoadBool b =>
+            Some {| vm_code := st.(vm_code);
+                    vm_pc := S st.(vm_pc);
+                    vm_stack := VBool b :: st.(vm_stack);
+                    vm_env := st.(vm_env);
+                    vm_frames := st.(vm_frames);
+                    vm_functions := st.(vm_functions);
+                    vm_halted := false |}
+        | ILoadString s =>
+            Some {| vm_code := st.(vm_code);
+                    vm_pc := S st.(vm_pc);
+                    vm_stack := VString s :: st.(vm_stack);
+                    vm_env := st.(vm_env);
+                    vm_frames := st.(vm_frames);
+                    vm_functions := st.(vm_functions);
+                    vm_halted := false |}
+        | ILoadVar x =>
+            match lookup st.(vm_env) x with
+            | Some v =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := v :: st.(vm_stack);
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | None => None
+            end
+        | IStoreVar x =>
+            match st.(vm_stack) with
+            | v :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := stk';
+                        vm_env := update st.(vm_env) x v;
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | [] => None
+            end
+        | IAdd =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_add v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | ISub =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_sub v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | IMul =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_mul v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | IDiv =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_div v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | IMod =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_mod v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | INeg =>
+            match st.(vm_stack) with
+            | v1 :: stk' =>
+                match eval_neg v1 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | IEq =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_eq v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | INe =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_ne v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | ILt =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_lt v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | ILe =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_le v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | IGt =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_gt v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | IGe =>
+            match st.(vm_stack) with
+            | v2 :: v1 :: stk' =>
+                match eval_ge v1 v2 with
+                | Some v =>
+                    Some {| vm_code := st.(vm_code);
+                            vm_pc := S st.(vm_pc);
+                            vm_stack := v :: stk';
+                            vm_env := st.(vm_env);
+                            vm_frames := st.(vm_frames);
+                            vm_functions := st.(vm_functions);
+                            vm_halted := false |}
+                | None => None
+                end
+            | _ => None
+            end
+        | IAnd =>
+            match st.(vm_stack) with
+            | VBool b2 :: VBool b1 :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := VBool (andb b1 b2) :: stk';
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | _ => None
+            end
+        | IOr =>
+            match st.(vm_stack) with
+            | VBool b2 :: VBool b1 :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := VBool (orb b1 b2) :: stk';
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | _ => None
+            end
+        | INot =>
+            match st.(vm_stack) with
+            | VBool b :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := VBool (negb b) :: stk';
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | _ => None
+            end
+        | IJmp addr =>
+            Some {| vm_code := st.(vm_code);
+                    vm_pc := addr;
+                    vm_stack := st.(vm_stack);
+                    vm_env := st.(vm_env);
+                    vm_frames := st.(vm_frames);
+                    vm_functions := st.(vm_functions);
+                    vm_halted := false |}
+        | IJz addr =>
+            match st.(vm_stack) with
+            | VBool false :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := addr;
+                        vm_stack := stk';
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | VBool true :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := stk';
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | _ => None
+            end
+        | IJnz addr =>
+            match st.(vm_stack) with
+            | VBool true :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := addr;
+                        vm_stack := stk';
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | VBool false :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := stk';
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | _ => None
+            end
+        | IPop =>
+            match st.(vm_stack) with
+            | _ :: stk' =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := stk';
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | [] => None
+            end
+        | IDup =>
+            match st.(vm_stack) with
+            | v :: _ =>
+                Some {| vm_code := st.(vm_code);
+                        vm_pc := S st.(vm_pc);
+                        vm_stack := v :: st.(vm_stack);
+                        vm_env := st.(vm_env);
+                        vm_frames := st.(vm_frames);
+                        vm_functions := st.(vm_functions);
+                        vm_halted := false |}
+            | [] => None
+            end
+        | IHalt =>
+            Some {| vm_code := st.(vm_code);
+                    vm_pc := st.(vm_pc);
+                    vm_stack := st.(vm_stack);
+                    vm_env := st.(vm_env);
+                    vm_frames := st.(vm_frames);
+                    vm_functions := st.(vm_functions);
+                    vm_halted := true |}
+        | INop =>
+            Some {| vm_code := st.(vm_code);
+                    vm_pc := S st.(vm_pc);
+                    vm_stack := st.(vm_stack);
+                    vm_env := st.(vm_env);
+                    vm_frames := st.(vm_frames);
+                    vm_functions := st.(vm_functions);
+                    vm_halted := false |}
+        | _ => None  (* 其他指令暂未实现 *)
+        end
+    end.
+
+(** 运行虚拟机最多 fuel 步 *)
+Fixpoint run_vm (fuel : nat) (st : vm_state) : vm_state :=
+  match fuel with
+  | O => st
+  | S fuel' =>
+      if st.(vm_halted) then st
+      else
+        match vm_step_exec st with
+        | Some st' => run_vm fuel' st'
+        | None => st
+        end
+  end.
