@@ -172,21 +172,88 @@ Definition eval_not (v : value) : option value :=
 
 (** ** Properties *)
 
-(** We admit properties for now - will prove them properly later *)
-
-Axiom eval_add_comm_int : forall n1 n2,
+(** 加法交换律 *)
+Lemma eval_add_comm_int : forall n1 n2,
   eval_add (VInt n1) (VInt n2) = eval_add (VInt n2) (VInt n1).
+Proof.
+  intros n1 n2.
+  unfold eval_add, eval_arith_binop.
+  simpl.
+  f_equal. f_equal.
+  apply Z.add_comm.
+Qed.
 
-Axiom eval_neg_involutive : forall n,
+(** 取负的对合性 *)
+Lemma eval_neg_involutive : forall n,
   eval_neg (VInt n) = Some (VInt (Z.opp n)) ->
   eval_neg (VInt (Z.opp n)) = Some (VInt n).
+Proof.
+  intros n H.
+  unfold eval_neg in *.
+  simpl in *.
+  f_equal. f_equal.
+  apply Z.opp_involutive.
+Qed.
 
-Axiom eval_not_involutive : forall b,
+(** 逻辑非的对合性 *)
+Lemma eval_not_involutive : forall b,
   eval_not (VBool b) = Some (VBool (negb b)) ->
   eval_not (VBool (negb b)) = Some (VBool b).
+Proof.
+  intros b H.
+  unfold eval_not in *.
+  simpl in *.
+  f_equal. f_equal.
+  apply negb_involutive.
+Qed.
 
-Axiom eval_div_zero_int : forall n,
+(** 除零检查 *)
+Lemma eval_div_zero_int : forall n,
   eval_div (VInt n) (VInt 0) = None.
+Proof.
+  intros n.
+  unfold eval_div.
+  simpl.
+  reflexivity.
+Qed.
+
+(** ** 额外的有用属性 *)
+
+(** 这些额外属性在后续开发中将被证明 *)
+
+(** 逻辑与的性质 *)
+Lemma eval_and_true_l : forall b,
+  eval_and (VBool true) (VBool b) = Some (VBool b).
+Proof.
+  intros b.
+  unfold eval_and, eval_bool_binop.
+  destruct b; reflexivity.
+Qed.
+
+Lemma eval_and_false_l : forall b,
+  eval_and (VBool false) (VBool b) = Some (VBool false).
+Proof.
+  intros b.
+  unfold eval_and, eval_bool_binop.
+  destruct b; reflexivity.
+Qed.
+
+(** 逻辑或的性质 *)
+Lemma eval_or_true_l : forall b,
+  eval_or (VBool true) (VBool b) = Some (VBool true).
+Proof.
+  intros b.
+  unfold eval_or, eval_bool_binop.
+  destruct b; reflexivity.
+Qed.
+
+Lemma eval_or_false_l : forall b,
+  eval_or (VBool false) (VBool b) = Some (VBool b).
+Proof.
+  intros b.
+  unfold eval_or, eval_bool_binop.
+  destruct b; reflexivity.
+Qed.
 
 (** ** 示例 *)
 
