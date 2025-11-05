@@ -90,6 +90,9 @@ Lemma compile_const_correct : forall v cs,
     | VBool b => instrs = [ILoadBool b]
     | VInt n => instrs = [ILoadInt n]
     | VReal r => instrs = [ILoadReal r]
+    | VQBool b q => instrs = [ILoadBool b]  (* 暂时简化 *)
+    | VQInt n q => instrs = [ILoadInt n]    (* 暂时简化 *)
+    | VQReal r q => instrs = [ILoadReal r]  (* 暂时简化 *)
     | VString s => instrs = [ILoadString s]
     | VVoid => instrs = []
     end.
@@ -101,6 +104,12 @@ Proof.
   - (* VInt *)
     exists [ILoadInt z]. unfold emit. simpl. split; reflexivity.
   - (* VReal *)
+    exists [ILoadReal q]. unfold emit. simpl. split; reflexivity.
+  - (* VQBool *)
+    exists [ILoadBool b]. unfold emit. simpl. split; reflexivity.
+  - (* VQInt *)
+    exists [ILoadInt z]. unfold emit. simpl. split; reflexivity.
+  - (* VQReal *)
     exists [ILoadReal q]. unfold emit. simpl. split; reflexivity.
   - (* VString *)
     exists [ILoadString s]. unfold emit. simpl. split; reflexivity.

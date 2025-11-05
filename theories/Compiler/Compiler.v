@@ -29,6 +29,12 @@ Fixpoint compile_expr (e : expr) (cs : compiler_state) : compiler_state :=
       emit cs (ILoadInt n)
   | EConst (VReal r) => 
       emit cs (ILoadReal r)
+  | EConst (VQBool b q) => 
+      emit cs (ILoadBool b)  (* 暂时简化：忽略质量位 *)
+  | EConst (VQInt n q) => 
+      emit cs (ILoadInt n)   (* 暂时简化：忽略质量位 *)
+  | EConst (VQReal r q) => 
+      emit cs (ILoadReal r)  (* 暂时简化：忽略质量位 *)
   | EConst (VString s) => 
       emit cs (ILoadString s)
   | EConst VVoid => 

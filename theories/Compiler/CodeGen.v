@@ -22,6 +22,9 @@ Definition gen_load_const (v : value) : list instr :=
   | VBool b => [ILoadBool b]
   | VInt n => [ILoadInt n]
   | VReal r => [ILoadReal r]
+  | VQBool b q => [ILoadBool b]  (* 暂时简化：忽略质量位 *)
+  | VQInt n q => [ILoadInt n]    (* 暂时简化：忽略质量位 *)
+  | VQReal r q => [ILoadReal r]  (* 暂时简化：忽略质量位 *)
   | VString s => [ILoadString s]
   | VVoid => []  (* 空值不生成指令 *)
   end.
