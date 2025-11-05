@@ -78,7 +78,7 @@ Definition address := nat.
 (** 跳转目标标签（编译时使用） *)
 Definition label := nat.
 
-(** ** 指令属性 *)
+(** 指令属性 *)
 
 (** 检查指令是否为跳转 *)
 Definition is_jump (i : instr) : bool :=
