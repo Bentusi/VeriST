@@ -160,20 +160,20 @@ let translate_instruction builder instr =
       add_instruction builder stvm_instr; stvm_instr
   
   | Bytecode.IJmp addr -> 
-      let stvm_instr = { opcode = 0x18; flags = 0x00; operand = addr } in
+      let stvm_instr = { opcode = 0x1B; flags = 0x00; operand = addr } in
       add_instruction builder stvm_instr; stvm_instr
   | Bytecode.IJz addr -> 
-      let stvm_instr = { opcode = 0x19; flags = 0x00; operand = addr } in
+      let stvm_instr = { opcode = 0x1C; flags = 0x00; operand = addr } in
       add_instruction builder stvm_instr; stvm_instr
   | Bytecode.IJnz addr -> 
-      let stvm_instr = { opcode = 0x1A; flags = 0x00; operand = addr } in
+      let stvm_instr = { opcode = 0x1D; flags = 0x00; operand = addr } in
       add_instruction builder stvm_instr; stvm_instr
   
   | Bytecode.IPop -> 
       let stvm_instr = { opcode = 0x01; flags = 0x00; operand = 0 } in
       add_instruction builder stvm_instr; stvm_instr
   | Bytecode.IHalt -> 
-      let stvm_instr = { opcode = 0x1D; flags = 0x00; operand = 0 } in
+      let stvm_instr = { opcode = 0x20; flags = 0x00; operand = 0 } in
       add_instruction builder stvm_instr; stvm_instr
   
   | _ -> 
@@ -191,3 +191,117 @@ let get_instruction_count builder = Stdlib.List.length builder.instructions
 
 (* Get all instructions - in original order *)
 let get_instructions builder = builder.instructions
+
+(* Pre-initialize constants for all variables *)
+(* This ensures initialization constants get lower indices *)
+let pre_initialize_constants builder =
+  Stdlib.List.iter (fun var ->
+    let init_const = match var.var_init with
+      | Some c -> c
+      | None -> 
+          (match var.var_type with
+           | 1 -> CInt 0
+           | 2 -> CBool false
+           | 3 -> CReal 0.0
+           | 4 -> CString ""
+           | _ -> CInt 0)
+    in
+    ignore (add_constant builder init_const)
+  ) builder.variables
+
+(* Generate variable initialization code *)
+let generate_var_init_code builder =
+  Stdlib.List.map (fun var ->
+    (* Get or create default constant *)
+    let init_const = match var.var_init with
+      | Some c -> c
+      | None -> 
+          (* Default values: 0 for INT, false for BOOL, 0.0 for REAL, "" for STRING *)
+          (match var.var_type with
+           | 1 -> CInt 0
+           | 2 -> CBool false
+           | 3 -> CReal 0.0
+           | 4 -> CString ""
+           | _ -> CInt 0)
+    in
+    let const_idx = add_constant builder init_const in
+    (* Find variable index *)
+    let var_idx = Stdlib.List.assoc var.var_name builder.var_map in
+    (* Return PUSH + STORE pair *)
+    [
+      { opcode = 0x00; flags = 0x00; operand = const_idx };  (* PUSH #const *)
+      { opcode = 0x04; flags = 0x01; operand = var_idx }     (* STORE global var *)
+    ]
+  ) builder.variables
+  |> Stdlib.List.flatten
+
+(* Finalize bytecode: add initialization, JMP, and HALT *)
+let finalize_bytecode builder =
+  (* Step 0: Reorganize constant pool - initialization constants first *)
+  (* Collect initialization constants *)
+  let init_constants = Stdlib.List.map (fun var ->
+    match var.var_init with
+      | Some c -> c
+      | None -> 
+          (match var.var_type with
+           | 1 -> CInt 0
+           | 2 -> CBool false
+           | 3 -> CReal 0.0
+           | 4 -> CString ""
+           | _ -> CInt 0)
+  ) builder.variables in
+  
+  (* Build new constant pool: init constants + other constants *)
+  let other_constants = Stdlib.List.filter (fun c ->
+    not (Stdlib.List.mem c init_constants)
+  ) builder.constants in
+  let new_constants = init_constants @ other_constants in
+  
+  (* Build new constant index mapping *)
+  let new_const_map = Stdlib.List.mapi (fun i c -> (c, i)) new_constants in
+  
+  (* Update user instructions with new indices *)
+  let remap_operand opcode old_operand =
+    if opcode = 0x00 then  (* PUSH - operand is constant index *)
+      let old_const = Stdlib.List.nth builder.constants old_operand in
+      Stdlib.List.assoc old_const new_const_map
+    else
+      old_operand
+  in
+  
+  let user_code_remapped = Stdlib.List.map (fun instr ->
+    { instr with operand = remap_operand instr.opcode instr.operand }
+  ) builder.instructions in
+  
+  (* Update builder *)
+  builder.constants <- new_constants;
+  builder.const_map <- new_const_map;
+  
+  (* Step 1: Save remapped user program instructions *)
+  let user_code = user_code_remapped in
+  
+  (* Step 2: Clear instructions to rebuild *)
+  builder.instructions <- [];
+  
+  (* Step 3: Generate initialization code for all variables *)
+  let init_code = generate_var_init_code builder in
+  let init_count = Stdlib.List.length init_code in
+  
+  (* Step 4: Create JMP instruction to skip initialization *)
+  let jmp_target = init_count + 1 in  (* +1 for the JMP instruction itself *)
+  let jmp_instr = { opcode = 0x1B; flags = 0x00; operand = jmp_target } in
+  
+  (* Step 5: Add HALT at the end *)
+  let halt_instr = { opcode = 0x20; flags = 0x00; operand = 0 } in
+  
+  (* Step 6: Assemble complete instruction sequence *)
+  (* Order: [init_code] [JMP] [user_code] [HALT] *)
+  builder.instructions <- init_code @ [jmp_instr] @ user_code @ [halt_instr];
+  
+  (* Step 7: Set entry point to 0 (start from beginning) *)
+  builder.entry_point <- 0;
+  
+  ()
+
+(* Get entry point *)
+let get_entry_point builder = builder.entry_point

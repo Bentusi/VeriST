@@ -129,9 +129,13 @@ let save_bytecode filename code =
     ignore (Bytecode_builder.translate_instruction builder instr)
   ) code;
   
+  (* Finalize: reorganize constants, add initialization, JMP, and HALT *)
+  Bytecode_builder.finalize_bytecode builder;
+  
   let constants = Bytecode_builder.get_constants builder in
   let variables = Bytecode_builder.get_variables builder in
   let instructions = Bytecode_builder.get_instructions builder in
+  let entry_point = Bytecode_builder.get_entry_point builder in
   
   let oc = open_out_bin filename in
   
@@ -143,8 +147,8 @@ let save_bytecode filename code =
   write_uint16 oc 1;  (* major *)
   write_uint16 oc 0;  (* minor *)
   
-  (* Entry point (0 = start of code) *)
-  write_uint32 oc 0;
+  (* Entry point *)
+  write_uint32 oc entry_point;
   
   (* Global variable count *)
   write_uint32 oc (Stdlib.List.length variables);
