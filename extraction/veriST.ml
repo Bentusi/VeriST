@@ -62,82 +62,117 @@ let read_file filename =
   close_in ic;
   s
 
+(* Write a 32-bit integer in little-endian format *)
+let write_uint32 oc n =
+  output_byte oc (n land 0xFF);
+  output_byte oc ((n lsr 8) land 0xFF);
+  output_byte oc ((n lsr 16) land 0xFF);
+  output_byte oc ((n lsr 24) land 0xFF)
+
+(* Write a 16-bit integer in little-endian format *)
+let write_uint16 oc n =
+  output_byte oc (n land 0xFF);
+  output_byte oc ((n lsr 8) land 0xFF)
+
+(* Write a 64-bit float in little-endian format *)
+let write_float64 oc f =
+  let bits = Int64.bits_of_float f in
+  output_byte oc (Int64.to_int (Int64.logand bits 0xFFL));
+  output_byte oc (Int64.to_int (Int64.logand (Int64.shift_right bits 8) 0xFFL));
+  output_byte oc (Int64.to_int (Int64.logand (Int64.shift_right bits 16) 0xFFL));
+  output_byte oc (Int64.to_int (Int64.logand (Int64.shift_right bits 24) 0xFFL));
+  output_byte oc (Int64.to_int (Int64.logand (Int64.shift_right bits 32) 0xFFL));
+  output_byte oc (Int64.to_int (Int64.logand (Int64.shift_right bits 40) 0xFFL));
+  output_byte oc (Int64.to_int (Int64.logand (Int64.shift_right bits 48) 0xFFL));
+  output_byte oc (Int64.to_int (Int64.logand (Int64.shift_right bits 56) 0xFFL))
+
+(* Write string with length prefix *)
+let write_string oc s =
+  let len = Stdlib.String.length s in
+  write_uint32 oc len;
+  Stdlib.String.iter (fun c -> output_byte oc (Char.code c)) s
+
+(* Save constant pool - STVM format: just the values, no type tags *)
+let write_constants oc constants =
+  Stdlib.List.iter (fun const ->
+    match const with
+    | Bytecode_builder.CInt n ->
+        write_uint32 oc n
+    | Bytecode_builder.CBool b ->
+        write_uint32 oc (if b then 1 else 0)
+    | Bytecode_builder.CReal f ->
+        write_float64 oc f
+    | Bytecode_builder.CString s ->
+        write_string oc s
+  ) constants
+
+(* STVM doesn't need variable table in bytecode - variables are referenced by index only *)
+let write_variables oc variables =
+  (* STVM doesn't serialize variable names/metadata, just count them *)
+  ()
+
+(* Save instructions *)
+let write_instructions oc instructions =
+  Stdlib.List.iter (fun instr ->
+    output_byte oc instr.Bytecode_builder.opcode;
+    output_byte oc instr.Bytecode_builder.flags;
+    write_uint16 oc instr.Bytecode_builder.operand
+  ) instructions
+
 (* Save bytecode to file in STVM format *)
 let save_bytecode filename code =
+  (* Build STVM-compatible bytecode *)
+  let builder = Bytecode_builder.create_builder () in
+  
+  (* Translate all instructions *)
+  Stdlib.List.iter (fun instr ->
+    ignore (Bytecode_builder.translate_instruction builder instr)
+  ) code;
+  
+  let constants = Bytecode_builder.get_constants builder in
+  let variables = Bytecode_builder.get_variables builder in
+  let instructions = Bytecode_builder.get_instructions builder in
+  
   let oc = open_out_bin filename in
   
-  (* Write instruction count (4 bytes, little-endian) *)
-  let code_len = Stdlib.List.length code in
-  output_byte oc (code_len land 0xFF);
-  output_byte oc ((code_len lsr 8) land 0xFF);
-  output_byte oc ((code_len lsr 16) land 0xFF);
-  output_byte oc ((code_len lsr 24) land 0xFF);
+  (* STBC File Header *)
+  (* Magic number: "STBC" = 0x43425453 in little-endian *)
+  write_uint32 oc 0x43425453;
+  
+  (* Version: 1.0 *)
+  write_uint16 oc 1;  (* major *)
+  write_uint16 oc 0;  (* minor *)
+  
+  (* Entry point (0 = start of code) *)
+  write_uint32 oc 0;
+  
+  (* Global variable count *)
+  write_uint32 oc (Stdlib.List.length variables);
+  
+  (* Constant count *)
+  write_uint32 oc (Stdlib.List.length constants);
+  
+  (* Function count *)
+  write_uint32 oc 0;  (* No functions yet *)
+  
+  (* Instruction count *)
+  write_uint32 oc (Stdlib.List.length instructions);
+  
+  (* Library dependency count *)
+  write_uint32 oc 0;  (* no dependencies *)
+  
+  (* Checksum (optional, set to 0 for now) *)
+  write_uint32 oc 0;
+  
+  (* Write constant pool *)
+  write_constants oc constants;
+  
+  (* Write variable table *)
+  write_variables oc variables;
   
   (* Write instructions *)
-  let rec write_instructions = function
-    | [] -> ()
-    | instr :: rest ->
-        (match instr with
-         | Bytecode.ILoadInt n ->
-             output_byte oc 0x01;
-             (* Write 4-byte integer, little-endian *)
-             output_byte oc (n land 0xFF);
-             output_byte oc ((n lsr 8) land 0xFF);
-             output_byte oc ((n lsr 16) land 0xFF);
-             output_byte oc ((n lsr 24) land 0xFF)
-         | Bytecode.ILoadBool b ->
-             output_byte oc 0x02;
-             output_byte oc (if b then 1 else 0)
-         | Bytecode.ILoadVar v ->
-             output_byte oc 0x05;
-             (* Write variable name length and chars *)
-             let len = Stdlib.List.length v in
-             output_byte oc len;
-             Stdlib.List.iter (fun c -> output_byte oc (Char.code c)) v
-         | Bytecode.IStoreVar v ->
-             output_byte oc 0x06;
-             let len = Stdlib.List.length v in
-             output_byte oc len;
-             Stdlib.List.iter (fun c -> output_byte oc (Char.code c)) v
-         | Bytecode.IAdd -> output_byte oc 0x10
-         | Bytecode.ISub -> output_byte oc 0x11
-         | Bytecode.IMul -> output_byte oc 0x12
-         | Bytecode.IDiv -> output_byte oc 0x13
-         | Bytecode.IMod -> output_byte oc 0x14
-         | Bytecode.INeg -> output_byte oc 0x15
-         | Bytecode.IEq -> output_byte oc 0x20
-         | Bytecode.INe -> output_byte oc 0x21
-         | Bytecode.ILt -> output_byte oc 0x22
-         | Bytecode.ILe -> output_byte oc 0x23
-         | Bytecode.IGt -> output_byte oc 0x24
-         | Bytecode.IGe -> output_byte oc 0x25
-         | Bytecode.IAnd -> output_byte oc 0x30
-         | Bytecode.IOr -> output_byte oc 0x31
-         | Bytecode.INot -> output_byte oc 0x32
-         | Bytecode.IJmp addr ->
-             output_byte oc 0x40;
-             output_byte oc (addr land 0xFF);
-             output_byte oc ((addr lsr 8) land 0xFF);
-             output_byte oc ((addr lsr 16) land 0xFF);
-             output_byte oc ((addr lsr 24) land 0xFF)
-         | Bytecode.IJz addr ->
-             output_byte oc 0x41;
-             output_byte oc (addr land 0xFF);
-             output_byte oc ((addr lsr 8) land 0xFF);
-             output_byte oc ((addr lsr 16) land 0xFF);
-             output_byte oc ((addr lsr 24) land 0xFF)
-         | Bytecode.IJnz addr ->
-             output_byte oc 0x42;
-             output_byte oc (addr land 0xFF);
-             output_byte oc ((addr lsr 8) land 0xFF);
-             output_byte oc ((addr lsr 16) land 0xFF);
-             output_byte oc ((addr lsr 24) land 0xFF)
-         | Bytecode.IPop -> output_byte oc 0x60
-         | Bytecode.IHalt -> output_byte oc 0xFF
-        );
-        write_instructions rest
-  in
-  write_instructions code;
+  write_instructions oc instructions;
+  
   close_out oc
 
 (* Main compilation function *)
@@ -170,6 +205,27 @@ let compile input_file output_file verbose =
     let init_state = CompilerState.init_compiler_state in
     let result_state = Compiler.compile_stmt ast init_state in
     let code = result_state.CompilerState.cs_code in
+    
+    (* Debug: print first few instructions *)
+    if verbose then begin
+      printf "Generated %d Coq bytecode instructions:\n" (Stdlib.List.length code);
+      let rec print_first n lst =
+        match n, lst with
+        | 0, _ | _, [] -> ()
+        | n, instr::rest ->
+            (match instr with
+             | Bytecode.ILoadInt v -> printf "  ILoadInt %d\n" v
+             | Bytecode.ILoadBool b -> printf "  ILoadBool %b\n" b
+             | Bytecode.ILoadVar v -> printf "  ILoadVar ...\n"
+             | Bytecode.IStoreVar v -> printf "  IStoreVar ...\n"
+             | Bytecode.IAdd -> printf "  IAdd\n"
+             | Bytecode.IJmp a -> printf "  IJmp %d\n" a
+             | Bytecode.IHalt -> printf "  IHalt\n"
+             | _ -> printf "  <other>\n");
+            print_first (n-1) rest
+      in
+      print_first 5 code
+    end;
     
     (* Save bytecode *)
     if verbose then printf "Writing bytecode to: %s\n" output_file;

@@ -39,6 +39,10 @@ echo "[3/4] Compiling parser and lexer..."
 ocamlc -c parser.mli parser.ml
 ocamlc -c lexer.ml
 
+# Step 3.5: Compile bytecode builder
+echo "[3.5/4] Compiling bytecode builder..."
+ocamlc -c bytecode_builder.ml
+
 # Step 4: Compile and link main compiler
 echo "[4/4] Linking compiler executable..."
 ocamlc -c veriST.ml
@@ -47,7 +51,7 @@ ocamlc -o veriST \
   Ascii.cmo String.cmo List.cmo QArith_base.cmo \
   Types.cmo Values.cmo AST.cmo Environment.cmo Operations.cmo \
   Bytecode.cmo CompilerState.cmo Compiler.cmo VMSemantics.cmo VM.cmo \
-  parser.cmo lexer.cmo veriST.cmo
+  parser.cmo lexer.cmo bytecode_builder.cmo veriST.cmo
 
 echo ""
 echo "✓ Compiler built successfully!"
