@@ -5,5 +5,8 @@
     "theories",
     "STCompiler"
   ],
-  "vscoq.path": "_CoqProject"
+  "vscoq.path": "_CoqProject",
+  "ocaml.sandbox": {
+    "kind": "global"
+  }
 }

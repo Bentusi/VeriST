@@ -15,7 +15,7 @@ Open Scope string_scope.
 
 (** ** 值定义 *)
 
-(** 质量位定义 *)
+(** 质量位定义 ·*)
 Inductive quality : Type :=
   | QGood : quality       (** 好质量 - 数据可信 *)
   | QBad : quality        (** 坏质量 - 数据不可信 *)

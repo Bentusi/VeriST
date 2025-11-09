@@ -1,6 +1,11 @@
 (** * Environment: IEC 61131-3 ST 的变量环境
 
     本模块定义用于源语言语义和虚拟机执行的变量环境。
+    环境将变量名映射到值，并提供基本操作如查找和更新。
+    还定义了类型化环境及其良类型性属性。
+    最后，提供了一些关于环境操作的引理。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.
