@@ -8,3 +8,4 @@ type ty =
 | TyQReal
 | TyString
 | TyVoid
+| TyArray of ty * int * int

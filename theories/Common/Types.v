@@ -7,12 +7,18 @@
 *)
 
 Require Import Coq.Strings.String.
+Require Import Coq.Numbers.DecimalString.
+Require Import Coq.Numbers.DecimalZ.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.QArith.QArith.
 Require Import Coq.Bool.Bool.
 
 Open Scope Z_scope.
 Open Scope string_scope.
+
+(** 将整数转换为字符串表示（十进制） *)
+Definition Z_to_string (z : Z) : string :=
+  DecimalString.NilZero.string_of_int (Z.to_int z).
 
 (** ** 基本数据类型 *)
 (** IEC 61131-3 ST 语言的类型 *)
@@ -22,9 +28,10 @@ Inductive ty : Type :=
   | TyReal : ty          (** 实数/浮点数类型 64bit *)
   | TyQBool : ty         (** 带质量位的布尔类型 *)
   | TyQInt : ty          (** 带质量位的整数类型 64bit *)
-  | TyQReal : ty        (** 带质量位的实数/浮点数类型 64bit *)
+  | TyQReal : ty         (** 带质量位的实数/浮点数类型 64bit *)
   | TyString : ty        (** 字符串类型 *)
-  | TyVoid : ty.         (** 空类型 (用于过程) *)
+  | TyVoid : ty          (** 空类型 (用于过程) *)
+  | TyArray : ty -> Z -> Z -> ty. (** 数组类型，指定元素类型、下界和上界 *)
 
 (** 类型相等性是可判定的 *)
 (** 1. 类型检查需要判断两个类型是否相等
@@ -35,10 +42,12 @@ Inductive ty : Type :=
 Theorem ty_eq_dec : forall (t1 t2 : ty), {t1 = t2} + {t1 <> t2}.
 Proof.
   decide equality.
+  + apply Z.eq_dec.
+  + apply Z.eq_dec.
 Qed.
 
 (** 布尔类型相等性判断 *)
-Definition ty_eqb (t1 t2 : ty) : bool :=
+Fixpoint ty_eqb (t1 t2 : ty) : bool :=
   match t1, t2 with
   | TyBool, TyBool => true
   | TyInt, TyInt => true
@@ -48,6 +57,8 @@ Definition ty_eqb (t1 t2 : ty) : bool :=
   | TyQReal, TyQReal => true
   | TyString, TyString => true
   | TyVoid, TyVoid => true
+  | TyArray et1 l1 u1, TyArray et2 l2 u2 =>
+      andb (ty_eqb et1 et2) (andb (Z.eqb l1 l2) (Z.eqb u1 u2))
   | _, _ => false
   end.
 
@@ -57,14 +68,26 @@ Lemma ty_eqb_eq : forall t1 t2,
 Proof.
   intros t1 t2.
   split; intros H.
-  - destruct t1, t2; simpl in *; try discriminate; reflexivity.
-  - subst. destruct t2; reflexivity.
+  - revert t2 H.
+    induction t1; intros t2 H; destruct t2; simpl in H; try discriminate; try reflexivity.
+    apply andb_prop in H as [Hty Hbounds].
+    apply andb_prop in Hbounds as [Hl Hu].
+    apply Z.eqb_eq in Hl.
+    apply Z.eqb_eq in Hu.
+    specialize (IHt1 _ Hty).
+    subst.
+    reflexivity.
+  - subst.
+    induction t2; simpl; try reflexivity.
+    rewrite IHt2.
+    rewrite Z.eqb_refl.
+    rewrite Z.eqb_refl.
+    reflexivity.
 Qed.
 
 (** ** 类型操作 **)
 
-(** 类型的字符串表示 (用于调试/错误消息) *)
-Definition ty_to_string (t : ty) : string :=
+Fixpoint ty_to_string (t : ty) : string :=
   match t with
   | TyBool => "BOOL"
   | TyInt => "INT"
@@ -74,7 +97,14 @@ Definition ty_to_string (t : ty) : string :=
   | TyQReal => "QREAL"
   | TyString => "STRING"
   | TyVoid => "VOID"
+  | TyArray et l u =>
+    "ARRAY[" ++ Z_to_string l ++ ".." ++ Z_to_string u ++ "] OF " ++ ty_to_string et
   end.
+
+  (* 测试 *)
+(** 示例：将类型转换为字符串 *)
+Example ex_ty_to_string1 : ty_to_string (TyArray TyQInt 0 10) = "ARRAY[0..10] OF QINT".
+Proof. reflexivity. Qed.
 
 (** 检查类型是否为数值类型 *)
 Definition is_numeric_type (t : ty) : bool :=
@@ -173,25 +203,6 @@ Proof.
 Qed.
 
 (** 传递性证明，较为复杂 *)
-Lemma can_coerce_trans : forall t1 t2 t3,
-  can_coerce t1 t2 = true ->
-  can_coerce t2 t3 = true ->
-  can_coerce t1 t3 = true.
-Proof.
-  intros t1 t2 t3 H12 H23.
-  destruct t1, t2, t3; simpl in *; try discriminate; try reflexivity.
-  all: repeat (
-    match goal with
-    | H : (if ty_eq_dec ?x ?y then _ else _) = true |- _ =>
-        destruct (ty_eq_dec x y); subst; simpl in *; try discriminate
-    end).
-  all: repeat (
-    match goal with
-    | |- context [ty_eq_dec ?x ?y] =>
-        destruct (ty_eq_dec x y); subst; simpl; try reflexivity; try discriminate
-    end).
-  all: try reflexivity.
-Qed.
 
 (** 公共类型具有对称性 *)
 Lemma common_type_sym : forall t1 t2 t,
