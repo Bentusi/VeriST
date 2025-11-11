@@ -13,6 +13,27 @@ Require Import STCompiler.Compiler.CompilerState.
 
 Import ListNotations.
 Open Scope nat_scope.
+Open Scope Z_scope.
+
+(** ** 质量位辅助 **)
+
+(** 为质量位常量生成唯一的标记值。
+    这些标记会在运行时被解释为“下一个常量携带的质量信息”。
+    我们选取负值区间，避免与用户程序中的普通整型常量冲突。 *)
+Definition quality_marker_base : Z := (-1024)%Z.
+
+(** 将质量位编码为整型标记。 *)
+Definition quality_marker_of (q : quality) : Z :=
+  match q with
+  | QGood => quality_marker_base
+  | QBad => quality_marker_base - 1
+  | QUncertain => quality_marker_base - 2
+  end.
+
+(** 生成用于携带质量信息的指令前缀。
+    运行时语义需要识别该前缀并与后续常量进行组合。 *)
+Definition gen_quality_prefix (q : quality) : list instr :=
+  [ILoadInt (quality_marker_of q)].
 
 (** ** 代码生成辅助函数 **)
 
@@ -22,9 +43,9 @@ Definition gen_load_const (v : value) : list instr :=
   | VBool b => [ILoadBool b]
   | VInt n => [ILoadInt n]
   | VReal r => [ILoadReal r]
-  | VQBool b q => [ILoadBool b]  (* 暂时简化：忽略质量位 *)
-  | VQInt n q => [ILoadInt n]    (* 暂时简化：忽略质量位 *)
-  | VQReal r q => [ILoadReal r]  (* 暂时简化：忽略质量位 *)
+  | VQBool b q => gen_quality_prefix q ++ [ILoadBool b]
+  | VQInt n q => gen_quality_prefix q ++ [ILoadInt n]
+  | VQReal r q => gen_quality_prefix q ++ [ILoadReal r]
   | VString s => [ILoadString s]
   | VVoid => []  (* 空值不生成指令 *)
   end.
