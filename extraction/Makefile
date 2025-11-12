@@ -64,10 +64,19 @@ main.cmo: main.ml
 main.cmx: main.ml
 	$(OCAMLOPT) -c $<
 
-.PHONY: clean test
+.PHONY: clean cleanall test
 
+# Clean compiled objects and executables
 clean:
-	rm -f *.cmo *.cmi *.cmx *.o $(TARGET) $(OPTTARGET)
+	rm -f *.cmo *.cmi *.cmx *.o *.cmt *.cmti *.cma *.cmxa *.a
+	rm -f $(TARGET) $(OPTTARGET)
+	rm -f lexer.ml parser.ml parser.mli parser.output parser.conflicts
+	rm -f *.stbc
+
+# Clean everything including extracted Coq files
+cleanall: clean
+	rm -f *.ml *.mli
+	@echo "Warning: This removes all extracted Coq files. Run 'make' in parent directory to regenerate."
 
 test: $(TARGET)
 	./$(TARGET)

@@ -9,7 +9,7 @@ EXTRACT_DIR := extraction
 EXTRACT_BUILD := $(EXTRACT_DIR)/_build
 
 # Targets
-.PHONY: all clean theories extract test install
+.PHONY: all clean cleanall theories extract test install
 
 # Default target
 all: theories
@@ -56,7 +56,17 @@ clean:
 	@rm -f $(COQMAKEFILE) $(COQMAKEFILE).conf
 	@find . -name "*.vo" -o -name "*.vok" -o -name "*.vos" -o -name "*.glob" -o -name ".*.aux" | xargs rm -f
 	@rm -rf $(EXTRACT_BUILD)
+	@echo "==> Cleaning OCaml extraction artifacts..."
+	@rm -f *.ml *.mli *.cmo *.cmi *.cmx *.o *.cmt *.cmti
+	@if [ -d $(EXTRACT_DIR) ]; then cd $(EXTRACT_DIR) && $(MAKE) clean 2>/dev/null || true; fi
 	@echo "==> Clean complete!"
+
+# Deep clean - remove all generated files including extracted sources
+cleanall: clean
+	@echo "==> Deep cleaning (removing extracted sources)..."
+	@rm -f *.ml *.mli
+	@if [ -d $(EXTRACT_DIR) ]; then cd $(EXTRACT_DIR) && $(MAKE) cleanall 2>/dev/null || true; fi
+	@echo "==> Deep clean complete!"
 
 # Help
 help:
@@ -66,6 +76,7 @@ help:
 	@echo "  extract       - Extract OCaml code from Coq"
 	@echo "  build-extract - Build the extracted OCaml code"
 	@echo "  test          - Run test examples"
-	@echo "  clean         - Clean build artifacts"
+	@echo "  clean         - Clean build artifacts (keep sources)"
+	@echo "  cleanall      - Deep clean (remove extracted sources too)"
 	@echo "  install       - Install the library"
 	@echo "  help          - Show this help message"
