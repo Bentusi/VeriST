@@ -13,21 +13,20 @@ Require Import STCompiler.Compiler.CompilerState.
 
 Import ListNotations.
 Open Scope nat_scope.
-Open Scope Z_scope.
 
 (** ** 质量位辅助 **)
 
 (** 为质量位常量生成唯一的标记值。
-    这些标记会在运行时被解释为“下一个常量携带的质量信息”。
+    这些标记会在运行时被解释为"下一个常量携带的质量信息"。
     我们选取负值区间，避免与用户程序中的普通整型常量冲突。 *)
 Definition quality_marker_base : Z := (-1024)%Z.
 
 (** 将质量位编码为整型标记。 *)
 Definition quality_marker_of (q : quality) : Z :=
   match q with
-  | QGood => quality_marker_base
-  | QBad => quality_marker_base - 1
-  | QUncertain => quality_marker_base - 2
+  | QGood => (quality_marker_base)%Z
+  | QBad => (quality_marker_base - 1)%Z
+  | QUncertain => (quality_marker_base - 2)%Z
   end.
 
 (** 生成用于携带质量信息的指令前缀。

@@ -32,6 +32,10 @@ let _ =
       ("RETURN", RETURN);
       ("INT", INT_TYPE);
       ("BOOL", BOOL_TYPE);
+      ("REAL", REAL_TYPE);
+      ("QINT", QINT_TYPE);
+      ("QBOOL", QBOOL_TYPE);
+      ("QREAL", QREAL_TYPE);
       ("TRUE", TRUE);
       ("FALSE", FALSE);
       ("AND", AND);

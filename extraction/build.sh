@@ -18,21 +18,22 @@ ocamlc -c Datatypes.mli Datatypes.ml
 ocamlc -c BinNums.mli BinNums.ml
 ocamlc -c BinPos.mli BinPos.ml
 ocamlc -c BinInt.mli BinInt.ml
+ocamlc -c Zbool.mli Zbool.ml
 ocamlc -c Ascii.mli Ascii.ml
 ocamlc -c String.mli String.ml
 ocamlc -c List.mli List.ml
 ocamlc -c QArith_base.mli QArith_base.ml
-ocamlc -c Zbool.mli Zbool.ml
 ocamlc -c Types.mli Types.ml
 ocamlc -c Values.mli Values.ml
 ocamlc -c AST.mli AST.ml
 ocamlc -c Environment.mli Environment.ml
 ocamlc -c Operations.mli Operations.ml
 ocamlc -c Bytecode.mli Bytecode.ml
-ocamlc -c CompilerState.mli CompilerState.ml
-ocamlc -c Compiler.mli Compiler.ml
-ocamlc -c VMSemantics.mli VMSemantics.ml
 ocamlc -c VM.mli VM.ml
+ocamlc -c VMSemantics.mli VMSemantics.ml
+ocamlc -c CompilerState.mli CompilerState.ml
+ocamlc -c CodeGen.mli CodeGen.ml
+ocamlc -c Compiler.mli Compiler.ml
 
 # Step 3: Compile parser and lexer
 echo "[3/4] Compiling parser and lexer..."
@@ -50,7 +51,7 @@ ocamlc -o veriST \
   Datatypes.cmo BinNums.cmo BinPos.cmo BinInt.cmo Zbool.cmo \
   Ascii.cmo String.cmo List.cmo QArith_base.cmo \
   Types.cmo Values.cmo AST.cmo Environment.cmo Operations.cmo \
-  Bytecode.cmo CompilerState.cmo Compiler.cmo VMSemantics.cmo VM.cmo \
+  Bytecode.cmo CompilerState.cmo CodeGen.cmo Compiler.cmo VMSemantics.cmo VM.cmo \
   parser.cmo lexer.cmo bytecode_builder.cmo veriST.cmo
 
 echo ""

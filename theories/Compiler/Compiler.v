@@ -13,6 +13,7 @@ Require Import STCompiler.Syntax.AST.
 Require Import STCompiler.Syntax.Bytecode.
 Require Import STCompiler.Semantics.VM.
 Require Import STCompiler.Compiler.CompilerState.
+Require Import STCompiler.Compiler.CodeGen.
 
 Import ListNotations.
 Open Scope string_scope.
@@ -23,22 +24,9 @@ Open Scope Z_scope.
 (** 编译表达式：将表达式编译为字节码，结果放在栈顶 *)
 Fixpoint compile_expr (e : expr) (cs : compiler_state) : compiler_state :=
   match e with
-  | EConst (VBool b) => 
-      emit cs (ILoadBool b)
-  | EConst (VInt n) => 
-      emit cs (ILoadInt n)
-  | EConst (VReal r) => 
-      emit cs (ILoadReal r)
-  | EConst (VQBool b q) => 
-      emit cs (ILoadBool b)  (* 暂时简化：忽略质量位 *)
-  | EConst (VQInt n q) => 
-      emit cs (ILoadInt n)   (* 暂时简化：忽略质量位 *)
-  | EConst (VQReal r q) => 
-      emit cs (ILoadReal r)  (* 暂时简化：忽略质量位 *)
-  | EConst (VString s) => 
-      emit cs (ILoadString s)
-  | EConst VVoid => 
-      cs  (* 空值不生成代码 *)
+  | EConst v => 
+      (* 使用 CodeGen 模块生成常量加载指令（包括质量位处理） *)
+      emit_list cs (gen_load_const v)
   | EVar x => 
       emit cs (ILoadVar x)
   | EBinop op e1 e2 =>

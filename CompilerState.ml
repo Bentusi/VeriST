@@ -48,6 +48,12 @@ let rec lookup_function table name =
     let (n, addr) = p in
     if eqb n name then Some addr else lookup_function rest name
 
+(** val emit_list : compiler_state -> instr list -> compiler_state **)
+
+let rec emit_list cs = function
+| [] -> cs
+| i :: rest -> emit_list (emit cs i) rest
+
 (** val binop_to_instr : binop -> instr **)
 
 let binop_to_instr = function

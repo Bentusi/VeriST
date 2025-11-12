@@ -1,4 +1,4 @@
-PROGRAM SimpleTest
+PROGRAM test_simple
 VAR
     x : INT;
 END_VAR

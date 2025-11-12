@@ -69,7 +69,8 @@ Separate Extraction
   
   (* 编译器 *)
   compiler_state init_compiler_state
-  emit current_address
+  emit current_address emit_list
+  gen_load_const quality_marker_of
   compile_expr compile_stmt
   compile_function compile_program
   

@@ -18,6 +18,7 @@ Require Import STCompiler.Semantics.Operations.
 Require Import STCompiler.Semantics.SourceSemantics.
 Require Import STCompiler.Semantics.VMSemantics.
 Require Import STCompiler.Compiler.CompilerState.
+Require Import STCompiler.Compiler.CodeGen.
 Require Import STCompiler.Compiler.Compiler.
 
 Import ListNotations.
@@ -90,31 +91,37 @@ Lemma compile_const_correct : forall v cs,
     | VBool b => instrs = [ILoadBool b]
     | VInt n => instrs = [ILoadInt n]
     | VReal r => instrs = [ILoadReal r]
-    | VQBool b q => instrs = [ILoadBool b]  (* 暂时简化 *)
-    | VQInt n q => instrs = [ILoadInt n]    (* 暂时简化 *)
-    | VQReal r q => instrs = [ILoadReal r]  (* 暂时简化 *)
+    | VQBool b q => instrs = [ILoadInt (CodeGen.quality_marker_of q); ILoadBool b]
+    | VQInt n q => instrs = [ILoadInt (CodeGen.quality_marker_of q); ILoadInt n]
+    | VQReal r q => instrs = [ILoadInt (CodeGen.quality_marker_of q); ILoadReal r]
     | VString s => instrs = [ILoadString s]
     | VVoid => instrs = []
     end.
 Proof.
   intros v cs.
-  destruct v; simpl.
+  destruct v as [b | n | r | b q | n q | r q | s |]; simpl; unfold CodeGen.gen_load_const; simpl.
   - (* VBool *)
-    exists [ILoadBool b]. unfold emit. simpl. split; reflexivity.
+    exists [ILoadBool b]. unfold emit_list, emit. simpl. split; reflexivity.
   - (* VInt *)
-    exists [ILoadInt z]. unfold emit. simpl. split; reflexivity.
+    exists [ILoadInt n]. unfold emit_list, emit. simpl. split; reflexivity.
   - (* VReal *)
-    exists [ILoadReal q]. unfold emit. simpl. split; reflexivity.
+    exists [ILoadReal r]. unfold emit_list, emit. simpl. split; reflexivity.
   - (* VQBool *)
-    exists [ILoadBool b]. unfold emit. simpl. split; reflexivity.
+    exists [ILoadInt (CodeGen.quality_marker_of q); ILoadBool b].
+    unfold CodeGen.gen_quality_prefix. unfold emit_list, emit. simpl.
+    rewrite <- app_assoc. simpl. split; reflexivity.
   - (* VQInt *)
-    exists [ILoadInt z]. unfold emit. simpl. split; reflexivity.
+    exists [ILoadInt (CodeGen.quality_marker_of q); ILoadInt n].
+    unfold CodeGen.gen_quality_prefix. unfold emit_list, emit. simpl.
+    rewrite <- app_assoc. simpl. split; reflexivity.
   - (* VQReal *)
-    exists [ILoadReal q]. unfold emit. simpl. split; reflexivity.
+    exists [ILoadInt (CodeGen.quality_marker_of q); ILoadReal r].
+    unfold CodeGen.gen_quality_prefix. unfold emit_list, emit. simpl.
+    rewrite <- app_assoc. simpl. split; reflexivity.
   - (* VString *)
-    exists [ILoadString s]. unfold emit. simpl. split; reflexivity.
+    exists [ILoadString s]. unfold emit_list, emit. simpl. split; reflexivity.
   - (* VVoid *)
-    exists []. simpl. split; auto. rewrite app_nil_r. reflexivity.
+    exists []. unfold emit_list. simpl. split; auto. rewrite app_nil_r. reflexivity.
 Qed.
 
 (** 简化版本：变量加载编译正确性 *)

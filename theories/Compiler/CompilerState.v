@@ -73,6 +73,16 @@ Fixpoint emit_list (cs : compiler_state) (instrs : list instr) : compiler_state 
   | i :: rest => emit_list (emit cs i) rest
   end.
 
+(** emit_list 将指令列表追加到代码末尾 *)
+Lemma emit_list_code : forall instrs cs,
+  cs_code (emit_list cs instrs) = (cs_code cs ++ instrs)%list.
+Proof.
+  induction instrs as [|i rest IH]; intros cs; simpl.
+  - rewrite app_nil_r. reflexivity.
+  - rewrite IH. unfold emit. simpl.
+    rewrite <- app_assoc. reflexivity.
+Qed.
+
 (** ** 标签和跳转处理 *)
 
 (** 临时指令类型：用于处理向前跳转 *)

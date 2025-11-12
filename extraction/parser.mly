@@ -26,7 +26,8 @@ let parse_error s =
 %token FOR TO BY END_FOR
 %token CASE OF END_CASE
 %token FUNCTION END_FUNCTION RETURN
-%token INT_TYPE BOOL_TYPE
+%token INT_TYPE BOOL_TYPE REAL_TYPE
+%token QINT_TYPE QBOOL_TYPE QREAL_TYPE
 %token TRUE FALSE
 %token AND OR NOT MOD
 %token SEMICOLON COLON COMMA DOT
@@ -73,6 +74,10 @@ var_decl:
 type_spec:
   | INT_TYPE { TyInt }
   | BOOL_TYPE { TyBool }
+  | REAL_TYPE { TyReal }
+  | QINT_TYPE { TyQInt }
+  | QBOOL_TYPE { TyQBool }
+  | QREAL_TYPE { TyQReal }
   ;
 
 statement_list:

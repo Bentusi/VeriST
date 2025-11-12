@@ -1,25 +1,16 @@
 open AST
 open Bytecode
+open CodeGen
 open CompilerState
 open Datatypes
 open List
 open VM
-open Values
 
 (** val compile_expr : expr -> compiler_state -> compiler_state **)
 
 let rec compile_expr e cs =
   match e with
-  | EConst v ->
-    (match v with
-     | VBool b -> emit cs (ILoadBool b)
-     | VInt n -> emit cs (ILoadInt n)
-     | VReal r -> emit cs (ILoadReal r)
-     | VQBool (b, _) -> emit cs (ILoadBool b)
-     | VQInt (n, _) -> emit cs (ILoadInt n)
-     | VQReal (r, _) -> emit cs (ILoadReal r)
-     | VString s -> emit cs (ILoadString s)
-     | VVoid -> cs)
+  | EConst v -> emit_list cs (gen_load_const v)
   | EVar x -> emit cs (ILoadVar x)
   | EBinop (op, e1, e2) ->
     let cs1 = compile_expr e1 cs in
