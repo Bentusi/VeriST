@@ -1,4 +1,5 @@
 # IEC 61131-3 ST编译器设计方案（Coq实现）
+© 2024 JIANG Wei <jiangwey@outlook.com> 
 
 ## 1. 项目概述
 
