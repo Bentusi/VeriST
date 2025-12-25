@@ -1,6 +1,8 @@
 (** * Compiler: 主编译器实现
 
     本模块实现从 ST AST 到字节码的编译器。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.

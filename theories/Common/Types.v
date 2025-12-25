@@ -2,8 +2,8 @@
 
   本模块定义了 IEC 61131-3 结构化文本语言的类型系统。
   包括基本数据类型、类型操作和类型安全属性。
-  
-  © 2024 JIANG Wei <jiangwey@outlook.com> 
+
+  © 2024 JIANG Wei <jiangwey@outlook.com>
 *)
 
 Require Import Coq.Strings.String.
@@ -173,20 +173,17 @@ Definition common_type (t1 t2 : ty) : option ty :=
   | TyReal, TyReal => Some TyReal
   | TyBool, TyBool => Some TyBool
   | TyString, TyString => Some TyString
-  
   (* 带质量位类型 *)
   | TyQReal, TyQInt | TyQInt, TyQReal => Some TyQReal
   | TyQInt, TyQInt => Some TyQInt
   | TyQReal, TyQReal => Some TyQReal
   | TyQBool, TyQBool => Some TyQBool
-  
   (* 混合：普通类型与带质量位类型 -> 带质量位类型 *)
   | TyInt, TyQInt | TyQInt, TyInt => Some TyQInt
   | TyReal, TyQReal | TyQReal, TyReal => Some TyQReal
   | TyBool, TyQBool | TyQBool, TyBool => Some TyQBool
   | TyInt, TyQReal | TyQReal, TyInt => Some TyQReal
   | TyReal, TyQInt | TyQInt, TyReal => Some TyQReal
-  
   | _, _ => None
   end.
 

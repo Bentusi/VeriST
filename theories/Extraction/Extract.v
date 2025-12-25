@@ -2,6 +2,8 @@
 
     本模块配置从 Coq 代码到 OCaml 的提取。
     提取编译器为可执行的OCaml代码。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 (* 导入所有需要提取的模块 *)

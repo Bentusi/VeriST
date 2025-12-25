@@ -1,6 +1,8 @@
 (** * Progress: 进展性证明
 
     本模块包含虚拟机执行的进展性证明。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Lists.List.

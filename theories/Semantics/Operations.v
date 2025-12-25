@@ -33,7 +33,7 @@ Definition eval_real_binop (op : Q -> Q -> Q) (v1 v2 : value) : option value :=
   end.
 
 (** Mixed arithmetic - promote to real *)
-Definition eval_arith_binop (op_int : Z -> Z -> Z) (op_real : Q -> Q -> Q) 
+Definition eval_arith_binop (op_int : Z -> Z -> Z) (op_real : Q -> Q -> Q)
                             (v1 v2 : value) : option value :=
   match v1, v2 with
   | VInt n1, VInt n2 => Some (VInt (op_int n1 n2))
@@ -94,10 +94,10 @@ Definition eval_mul (v1 v2 : value) : option value :=
 (** Division *)
 Definition eval_div (v1 v2 : value) : option value :=
   match v1, v2 with
-  | VInt n1, VInt n2 => 
+  | VInt n1, VInt n2 =>
       if Z.eqb n2 0 then None  (* Division by zero *)
       else Some (VInt (Z.div n1 n2))
-  | VReal r1, VReal r2 => 
+  | VReal r1, VReal r2 =>
       if Qeq_bool r2 0 then None
       else Some (VReal (Qdiv r1 r2))
   | VInt n1, VReal r2 =>

@@ -1,6 +1,8 @@
 (** * CodeGen: 代码生成工具
 
     本模块提供用于生成字节码的辅助工具。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.

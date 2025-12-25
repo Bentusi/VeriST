@@ -2,6 +2,8 @@
 
     本模块定义 IEC 61131-3 ST 虚拟机的字节码指令集，
     基于 STVM 设计。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.

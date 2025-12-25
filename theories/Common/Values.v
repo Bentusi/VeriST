@@ -2,6 +2,8 @@
 
     本模块定义运行时值及其与类型的关系。
     包括值构造器、类型检查和值操作。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.

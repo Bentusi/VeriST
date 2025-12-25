@@ -2,6 +2,8 @@
 
     本模块包含类型安全性证明，包括类型保持（Preservation）和
     进展性（Progress）定理。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Lists.List.

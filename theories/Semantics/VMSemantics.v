@@ -2,6 +2,8 @@
 
     本模块定义虚拟机中字节码执行的操作语义，
     包括单步执行和多步执行的归纳定义。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Lists.List.

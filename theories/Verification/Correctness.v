@@ -1,6 +1,8 @@
 (** * Correctness: 编译器正确性证明
 
     本模块包含主要的编译器正确性定理，证明编译器保持程序语义。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Lists.List.

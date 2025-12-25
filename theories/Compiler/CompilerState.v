@@ -1,6 +1,8 @@
 (** * CompilerState: 编译器状态管理
 
     本模块定义编译器的状态单子和工具函数。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.

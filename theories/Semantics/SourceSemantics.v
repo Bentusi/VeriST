@@ -2,6 +2,8 @@
 
     本模块定义 IEC 61131-3 ST 源语言的操作语义，
     包括表达式求值和语句执行的归纳定义。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.

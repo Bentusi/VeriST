@@ -2,6 +2,8 @@
 
     本模块定义 the state of the virtual machine that executes
     bytecode generated from IEC 61131-3 ST programs.
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.

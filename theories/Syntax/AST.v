@@ -2,6 +2,8 @@
 
     本模块定义 IEC 61131-3 结构化文本语言的抽象语法树，
     包括表达式、语句、函数和程序。
+
+    © 2024 JIANG Wei <jiangwey@outlook.com> 
 *)
 
 Require Import Coq.Strings.String.
